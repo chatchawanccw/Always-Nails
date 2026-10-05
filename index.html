@@ -3,8 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Clean Contour Ultra-HD Studio</title>
-  <!-- โหลด ImageTracer สำหรับสร้างไฟล์เวกเตอร์ SVG แท้ ไม่แตก 100% -->
+  <title>Clean Contour Studio</title>
   <script src="https://cdn.jsdelivr.net/npm/imagetracerjs@1.2.6/imagetracer_v1.2.6.min.js"></script>
   <style>
     * { 
@@ -45,7 +44,7 @@
       border: 2px dashed #0984e3;
       background: #f0f7ff;
       border-radius: 12px;
-      padding: 12px;
+      padding: 14px;
       text-align: center;
       cursor: pointer;
       font-size: 0.85rem;
@@ -53,18 +52,6 @@
       color: #0984e3;
     }
 
-    .res-badge {
-      font-size: 0.7rem;
-      background: #e1f0fa;
-      color: #0984e3;
-      padding: 4px 8px;
-      border-radius: 6px;
-      font-weight: bold;
-      text-align: center;
-      display: none;
-    }
-
-    /* พรีวิว */
     .preview-container {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -143,7 +130,6 @@
       accent-color: #0984e3;
     }
 
-    /* ปุ่มดาวน์โหลด 2 แบบ */
     .save-group {
       margin-top: auto;
       display: grid;
@@ -162,34 +148,23 @@
       align-items: center;
       justify-content: center;
       gap: 2px;
-      transition: 0.15s;
     }
     .btn-png { background: #0984e3; color: #fff; }
     .btn-svg { background: #2d3436; color: #fff; }
-    .btn-save:hover { opacity: 0.9; }
     .btn-save small { font-size: 0.65rem; opacity: 0.8; font-weight: normal; }
-
-    #loadingText {
-      display: none;
-      text-align: center;
-      font-size: 0.8rem;
-      color: #0984e3;
-      font-weight: bold;
-      margin-top: 4px;
-    }
+    #loadingText { display: none; text-align: center; font-size: 0.8rem; color: #0984e3; font-weight: bold; }
   </style>
 </head>
 <body>
 
   <div class="app-container">
     <div class="header">
-      <h1>Clean Contour Ultra-HD</h1>
-      <p>สกัดลายเส้นความละเอียดสูงสุดระดับ Master</p>
+      <h1>Clean Contour Studio</h1>
+      <p>รองรับการใช้งานทั้งบนมือถือและคอมพิวเตอร์ 100%</p>
     </div>
 
-    <div id="dropzone">📷 คลิกเลือกภาพ / ลากรูปมาวาง / กด [ Ctrl+V ]</div>
+    <div id="dropzone">📷 แตะที่นี่เพื่อเลือกรูปจากอัลบั้ม</div>
     <input type="file" id="fileInput" accept="image/*" style="display:none">
-    <div class="res-badge" id="resBadge">ความละเอียดไฟล์ออก: 0 x 0 px</div>
 
     <div class="type-selector">
       <button class="type-btn" id="btnModeSimple" onclick="setType('simple')">ลายเส้นทั่วไป / สติกเกอร์</button>
@@ -202,7 +177,7 @@
         <div class="preview-box"><img id="origImg" style="display:none;"></div>
       </div>
       <div class="preview-card">
-        <div class="preview-title" style="color:#0984e3;">ลายเส้นคมชัด</div>
+        <div class="preview-title" style="color:#0984e3;">ลายเส้นสกัด</div>
         <div class="preview-box"><canvas id="previewCanvas"></canvas></div>
       </div>
     </div>
@@ -219,9 +194,9 @@
       <div class="control-item">
         <div class="control-label">
           <span style="color:#0984e3;">ตัดพื้นผิวรก / เงารบกวน (Texture Suppress)</span>
-          <span id="suppressVal">4</span>
+          <span id="suppressVal">3</span>
         </div>
-        <input type="range" id="suppress" min="1" max="10" value="4">
+        <input type="range" id="suppress" min="1" max="8" value="3">
       </div>
 
       <div class="control-item">
@@ -229,21 +204,20 @@
           <span>ความหนาเส้น (Thickness)</span>
           <span id="thickVal">2.0</span>
         </div>
-        <input type="range" id="thick" min="1.0" max="6.0" step="0.5" value="2.0">
+        <input type="range" id="thick" min="1.0" max="5.0" step="0.5" value="2.0">
       </div>
     </div>
 
-    <div id="loadingText">⏳ กำลังประมวลผลความละเอียดสูงระดับ Master...</div>
+    <div id="loadingText">⏳ กำลังประมวลผลความละเอียดสูง...</div>
 
-    <!-- ปุ่มเซฟ 2 ระบบ -->
     <div class="save-group">
       <button class="btn-save btn-png" id="savePngBtn">
         <span>💾 บันทึก Ultra-HD PNG</span>
-        <small>ขนาดเต็มภาพจริง คมชัด 100%</small>
+        <small>ภาพคมชัดขนาดจริง</small>
       </button>
       <button class="btn-save btn-svg" id="saveSvgBtn">
         <span>✨ บันทึก SVG Vector</span>
-        <small>ซูมไม่แตก 100% นำไปพิมพ์ได้คมกริบ</small>
+        <small>ซูมไม่แตก 100%</small>
       </button>
     </div>
   </div>
@@ -257,11 +231,11 @@
     const origImg = document.getElementById('origImg');
     const previewCanvas = document.getElementById('previewCanvas');
     const previewCtx = previewCanvas.getContext('2d');
-    const resBadge = document.getElementById('resBadge');
     const loadingText = document.getElementById('loadingText');
 
     dropzone.onclick = () => fileInput.click();
     fileInput.onchange = (e) => loadFile(e.target.files[0]);
+
     window.addEventListener('paste', (e) => {
       const item = [...e.clipboardData.items].find(x => x.type.includes('image'));
       if (item) loadFile(item.getAsFile());
@@ -269,27 +243,23 @@
 
     function loadFile(file) {
       if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        rawImg = new Image();
-        rawImg.onload = () => {
-          origImg.src = e.target.result;
-          origImg.style.display = 'block';
+      
+      // ใช้ URL.createObjectURL ที่ปลอดภัยและเบาเครื่องมือถือมากที่สุด
+      const imgUrl = URL.createObjectURL(file);
+      rawImg = new Image();
+      rawImg.onload = () => {
+        origImg.src = imgUrl;
+        origImg.style.display = 'block';
 
-          // แสดงขนาดจริงของรูปที่ผู้ใช้ใส่เข้ามา
-          resBadge.style.display = 'block';
-          resBadge.innerText = `ความละเอียดเซฟจริง: ${rawImg.naturalWidth} x ${rawImg.naturalHeight} px (ตามต้นฉบับ)`;
+        // ปรับขนาดพรีวิวบนมือถือให้เหมาะสม ไม่เกิน 500px เพื่อความลื่นไหล
+        let maxDim = 500;
+        let scale = Math.min(1, maxDim / Math.max(rawImg.naturalWidth, rawImg.naturalHeight));
+        previewCanvas.width = Math.round(rawImg.naturalWidth * scale);
+        previewCanvas.height = Math.round(rawImg.naturalHeight * scale);
 
-          // ย่อเฉพาะ "หน้าจอพรีวิว" เพื่อให้เลื่อนสไลเดอร์ได้ลื่น ไม่หน่วงเครื่อง
-          let scale = Math.min(1, 600 / Math.max(rawImg.naturalWidth, rawImg.naturalHeight));
-          previewCanvas.width = Math.round(rawImg.naturalWidth * scale);
-          previewCanvas.height = Math.round(rawImg.naturalHeight * scale);
-
-          renderContour(previewCanvas, scale);
-        };
-        rawImg.src = e.target.result;
+        renderContour(previewCanvas, scale);
       };
-      reader.readAsDataURL(file);
+      rawImg.src = imgUrl;
     }
 
     function setType(type) {
@@ -298,8 +268,8 @@
       document.getElementById('btnModeComplex').classList.toggle('active', type === 'complex');
       
       if (type === 'complex') {
-        document.getElementById('suppress').value = 4;
-        document.getElementById('suppressVal').innerText = "4";
+        document.getElementById('suppress').value = 3;
+        document.getElementById('suppressVal').innerText = "3";
         document.getElementById('sensitivity').value = 50;
         document.getElementById('sensVal').innerText = "50";
       } else {
@@ -308,10 +278,50 @@
         document.getElementById('sensitivity').value = 65;
         document.getElementById('sensVal').innerText = "65";
       }
-      renderContour(previewCanvas, previewCanvas.width / rawImg.naturalWidth);
+      if (rawImg) renderContour(previewCanvas, previewCanvas.width / rawImg.naturalWidth);
     }
 
-    // ฟังก์ชันคำนวณลายเส้น (รองรับการเรนเดอร์ทั้งขนาดเล็ก และขนาดความละเอียดสูง 100%)
+    // ========================================================
+    // ฟังก์ชันคำนวณเบลอแบบ Pure JS (แก้ปัญหา Safari มือถือจอขาว)
+    // ========================================================
+    function boxBlur(src, w, h, radius) {
+      if (radius <= 0) return new Float32Array(src);
+      let out = new Float32Array(w * h);
+      let tmp = new Float32Array(w * h);
+
+      // แนวนอน (Horizontal Pass)
+      for (let y = 0; y < h; y++) {
+        for (let x = 0; x < w; x++) {
+          let sum = 0, count = 0;
+          for (let dx = -radius; dx <= radius; dx++) {
+            let nx = x + dx;
+            if (nx >= 0 && nx < w) {
+              sum += src[y * w + nx];
+              count++;
+            }
+          }
+          tmp[y * w + x] = sum / count;
+        }
+      }
+
+      // แนวตั้ง (Vertical Pass)
+      for (let x = 0; x < w; x++) {
+        for (let y = 0; y < h; y++) {
+          let sum = 0, count = 0;
+          for (let dy = -radius; dy <= radius; dy++) {
+            let ny = y + dy;
+            if (ny >= 0 && ny < h) {
+              sum += tmp[ny * w + x];
+              count++;
+            }
+          }
+          out[y * w + x] = sum / count;
+        }
+      }
+      return out;
+    }
+
+    // ฟังก์ชันหลักในการวาดลายเส้น
     function renderContour(targetCanvas, scaleRatio) {
       if (!rawImg) return;
       const w = targetCanvas.width;
@@ -319,41 +329,49 @@
       const ctx = targetCanvas.getContext('2d');
 
       const sens = parseInt(document.getElementById('sensitivity').value);
-      const suppress = parseInt(document.getElementById('suppress').value) * scaleRatio;
+      const suppress = Math.round(parseInt(document.getElementById('suppress').value) * scaleRatio);
       const thick = parseFloat(document.getElementById('thick').value) * scaleRatio;
 
-      const c1 = document.createElement('canvas');
-      const c2 = document.createElement('canvas');
-      c1.width = c2.width = w;
-      c1.height = c2.height = h;
-      const ctx1 = c1.getContext('2d');
-      const ctx2 = c2.getContext('2d');
+      // วาดรูปลง Canvas ชั่วคราว
+      const offCan = document.createElement('canvas');
+      offCan.width = w;
+      offCan.height = h;
+      const offCtx = offCan.getContext('2d');
+      offCtx.drawImage(rawImg, 0, 0, w, h);
 
-      ctx1.filter = `blur(${suppress * 0.4}px) grayscale(100%)`;
-      ctx1.drawImage(rawImg, 0, 0, w, h);
+      const imgData = offCtx.getImageData(0, 0, w, h);
+      const d = imgData.data;
 
-      ctx2.filter = `blur(${suppress * 0.4 + (2.5 * scaleRatio)}px) grayscale(100%)`;
-      ctx2.drawImage(rawImg, 0, 0, w, h);
+      // 1. แปลงเป็นขาวดำ (Grayscale Array)
+      const gray = new Float32Array(w * h);
+      for (let i = 0; i < d.length; i += 4) {
+        gray[i / 4] = 0.299 * d[i] + 0.587 * d[i+1] + 0.114 * d[i+2];
+      }
 
-      const d1 = ctx1.getImageData(0, 0, w, h).data;
-      const d2 = ctx2.getImageData(0, 0, w, h).data;
+      // 2. คำนวณเบลอแบบ 2 ชั้นด้วย Pure JS Math (DoG Algorithm)
+      const r1 = Math.max(1, suppress);
+      const r2 = Math.max(2, suppress + Math.round(3 * scaleRatio));
+
+      const b1 = boxBlur(gray, w, h, r1);
+      const b2 = boxBlur(gray, w, h, r2);
 
       const edgeMap = new Uint8Array(w * h);
       const threshold = (100 - sens) * 0.35;
 
-      for (let i = 0; i < d1.length; i += 4) {
-        let v1 = d1[i];
-        let v2 = d2[i];
+      for (let i = 0; i < gray.length; i++) {
+        let v1 = b1[i];
+        let v2 = b2[i];
 
         if (imageType === 'complex') {
           let diff = v2 - v1;
-          if (diff > threshold) edgeMap[i / 4] = 1;
+          if (diff > threshold) edgeMap[i] = 1;
         } else {
           let diff = Math.abs(v1 - v2);
-          if (diff > threshold * 1.5 && v1 < 210) edgeMap[i / 4] = 1;
+          if (diff > threshold * 1.5 && v1 < 210) edgeMap[i] = 1;
         }
       }
 
+      // 3. วาดเส้นขอบ
       ctx.clearRect(0, 0, w, h);
       ctx.fillStyle = '#111111';
       const r = Math.max(0.5, thick / 2);
@@ -369,7 +387,7 @@
       }
     }
 
-    // อัปเดตพรีวิวแบบเรียลไทม์
+    // Sliders Event
     ['sensitivity', 'suppress', 'thick'].forEach(id => {
       document.getElementById(id).addEventListener('input', (e) => {
         const valSpan = document.getElementById(id === 'sensitivity' ? 'sensVal' : id === 'suppress' ? 'suppressVal' : 'thickVal');
@@ -379,22 +397,18 @@
     });
 
     // ========================================================
-    // 1. ระบบบันทึกแบบ Ultra-HD PNG (ขนาดจริง 100% ไม่บีบภาพ)
+    // บันทึกภาพ PNG (รองรับมือถือและคอมพิวเตอร์)
     // ========================================================
     document.getElementById('savePngBtn').onclick = () => {
       if (!rawImg) return;
       loadingText.style.display = 'block';
 
       setTimeout(() => {
-        // สร้าง Canvas ขนาดเท่ารูปต้นฉบับจริง 100%
         const hdCanvas = document.createElement('canvas');
         hdCanvas.width = rawImg.naturalWidth;
         hdCanvas.height = rawImg.naturalHeight;
-        
-        // เรนเดอร์ด้วยความละเอียดเต็ม (scaleRatio = 1.0)
         renderContour(hdCanvas, 1.0);
 
-        // วางพื้นหลังสีขาวคมชัด
         const finalCanvas = document.createElement('canvas');
         finalCanvas.width = hdCanvas.width;
         finalCanvas.height = hdCanvas.height;
@@ -403,11 +417,10 @@
         fCtx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
         fCtx.drawImage(hdCanvas, 0, 0);
 
-        // ดาวน์โหลด
         const downloadAction = () => {
           const a = document.createElement('a');
           a.href = finalCanvas.toDataURL('image/png', 1.0);
-          a.download = `ultra-hd-lineart-${finalCanvas.width}x${finalCanvas.height}.png`;
+          a.download = `clean-lineart-${finalCanvas.width}x${finalCanvas.height}.png`;
           document.body.appendChild(a);
           a.click();
           document.body.removeChild(a);
@@ -417,7 +430,7 @@
         const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
         if (isMobile && navigator.canShare) {
           finalCanvas.toBlob(async (blob) => {
-            const file = new File([blob], 'ultra-hd-lineart.png', { type: 'image/png' });
+            const file = new File([blob], 'clean-lineart.png', { type: 'image/png' });
             if (navigator.canShare({ files: [file] })) {
               try {
                 await navigator.share({ files: [file], title: 'บันทึกรูปลายเส้น HD' });
@@ -433,7 +446,7 @@
     };
 
     // ========================================================
-    // 2. ระบบบันทึกแบบ SVG Vector (ซูมไม่แตก 100% เกรด Illustrator)
+    // บันทึกภาพ SVG Vector
     // ========================================================
     document.getElementById('saveSvgBtn').onclick = () => {
       if (!rawImg) return;
@@ -448,7 +461,6 @@
         const ctx = hdCanvas.getContext('2d');
         const imgData = ctx.getImageData(0, 0, hdCanvas.width, hdCanvas.height);
 
-        // แปลงภาพลายเส้นเป็นเวกเตอร์แท้ๆ ด้วย ImageTracer
         const options = {
           corsenabled: false,
           ltres: 1.5,
@@ -460,8 +472,6 @@
         };
 
         const svgString = ImageTracer.imagedataToSVG(imgData, options);
-        
-        // ลบพื้นหลังสีขาวออก เหลือเฉพาะเส้นเวกเตอร์ดำคมๆ
         const parser = new DOMParser();
         const doc = parser.parseFromString(svgString, 'image/svg+xml');
         const svg = doc.querySelector('svg');
