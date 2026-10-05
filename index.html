@@ -2,9 +2,8 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8">
-  <!-- ล็อกขนาดหน้าจอมือถือไม่ให้ขยายหรือเลื่อนโยกไปมา -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Clean Contour Mobile</title>
+  <title>Clean Contour Studio</title>
   <style>
     * { 
       box-sizing: border-box; 
@@ -14,7 +13,6 @@
       -webkit-tap-highlight-color: transparent;
     }
     
-    /* ล็อกความกว้างหน้าจอ ป้องกันการเลื่อนซ้ายขวา */
     html, body {
       width: 100%;
       max-width: 100vw;
@@ -27,7 +25,7 @@
 
     .app-container {
       width: 100%;
-      max-width: 500px;
+      max-width: 520px;
       min-height: 100vh;
       background: #ffffff;
       padding: 16px;
@@ -37,12 +35,10 @@
       box-shadow: 0 0 20px rgba(0,0,0,0.05);
     }
 
-    /* หัวข้อ */
     .header { text-align: center; padding-bottom: 8px; border-bottom: 1px solid #f1f2f6; }
     .header h1 { font-size: 1.15rem; color: #2d3436; }
     .header p { font-size: 0.75rem; color: #747d8c; margin-top: 2px; }
 
-    /* ปุ่มเลือกรูป */
     #dropzone {
       border: 2px dashed #0984e3;
       background: #f0f7ff;
@@ -55,7 +51,6 @@
       color: #0984e3;
     }
 
-    /* พรีวิวภาพคู่ ซ้าย-ขวา */
     .preview-container {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -86,7 +81,6 @@
       object-fit: contain;
     }
 
-    /* แผงควบคุม */
     .controls-panel {
       background: #f8f9fa;
       border-radius: 12px;
@@ -104,15 +98,13 @@
       color: #2f3542;
     }
     
-    /* สไลเดอร์ปรับแต่งขนาดให้สัมผัสง่าย */
     input[type=range] {
       width: 100%;
       height: 28px;
-      touch-action: pan-x; /* ป้องกันจอดิ้นเวลาลากนิ้ว */
+      touch-action: pan-x;
       accent-color: #0984e3;
     }
 
-    /* ปุ่มสลับโหมด */
     .mode-group {
       display: flex;
       gap: 10px;
@@ -137,7 +129,6 @@
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
 
-    /* ปุ่มดาวน์โหลด */
     .btn-save {
       margin-top: auto;
       width: 100%;
@@ -154,7 +145,8 @@
       justify-content: center;
       gap: 8px;
     }
-    .btn-save:active { background: #076fc2; transform: scale(0.99); }
+    .btn-save:hover { background: #0873c4; }
+    .btn-save:active { transform: scale(0.99); }
   </style>
 </head>
 <body>
@@ -165,11 +157,9 @@
       <p>สกัดลายเส้นคมชัดสำหรับสติกเกอร์และสมุดระบายสี</p>
     </div>
 
-    <!-- ปุ่มเลือกรูปภาพจากมือถือ -->
-    <div id="dropzone">📷 แตะที่นี่เพื่อเลือกรูปจากคลังภาพ</div>
+    <div id="dropzone">📷 คลิกเลือกภาพ / ลากรูปมาวาง / กด [ Ctrl+V ]</div>
     <input type="file" id="fileInput" accept="image/*" style="display:none">
 
-    <!-- พรีวิวเทียบภาพ 2 ฝั่ง -->
     <div class="preview-container">
       <div class="preview-card">
         <div class="preview-title">ต้นฉบับ</div>
@@ -181,15 +171,12 @@
       </div>
     </div>
 
-    <!-- แผงสลับโหมดการดึงเส้น -->
     <div class="mode-group">
       <button class="mode-btn active" id="btnModeDraw" onclick="setMode('draw')">ดึงตามเส้นวาดเดิม</button>
       <button class="mode-btn" id="btnModeColor" onclick="setMode('color')">วาดล้อมรอยต่อสี</button>
     </div>
 
-    <!-- แถบปรับสไลเดอร์ 3 ตัว (เหมือนในคลิป) -->
     <div class="controls-panel">
-      <!-- 1. ความละเอียด -->
       <div class="control-item">
         <div class="control-label">
           <span>ความละเอียดดีเทล (Detail)</span>
@@ -198,7 +185,6 @@
         <input type="range" id="detail" min="20" max="95" value="65">
       </div>
 
-      <!-- 2. ความหนาเส้น -->
       <div class="control-item">
         <div class="control-label">
           <span>ความหนาเส้น (Thickness)</span>
@@ -207,7 +193,6 @@
         <input type="range" id="thick" min="1.0" max="6.0" step="0.5" value="2.5">
       </div>
 
-      <!-- 3. ลบจุดฝุ่น/Noise -->
       <div class="control-item">
         <div class="control-label">
           <span>ลบจุดฝุ่นเล็กๆ (Filter Dots)</span>
@@ -217,7 +202,6 @@
       </div>
     </div>
 
-    <!-- ปุ่มบันทึกลงมือถือ -->
     <button class="btn-save" id="saveBtn">📥 บันทึกรูปลายเส้นลงเครื่อง</button>
   </div>
 
@@ -231,9 +215,13 @@
     const resultCanvas = document.getElementById('resultCanvas');
     const resultCtx = resultCanvas.getContext('2d');
 
-    // จัดการเลือกไฟล์ภาพบนมือถือ
     dropzone.onclick = () => fileInput.click();
     fileInput.onchange = (e) => loadFile(e.target.files[0]);
+
+    window.addEventListener('paste', (e) => {
+      const item = [...e.clipboardData.items].find(x => x.type.includes('image'));
+      if (item) loadFile(item.getAsFile());
+    });
 
     function loadFile(file) {
       if (!file) return;
@@ -244,7 +232,6 @@
           origImg.src = e.target.result;
           origImg.style.display = 'block';
 
-          // ย่อขนาดให้พอดีหน้าจอมือถือและประมวลผลเร็ว
           const maxDim = 800;
           let scale = Math.min(1, maxDim / Math.max(rawImg.width, rawImg.height));
           resultCanvas.width = Math.round(rawImg.width * scale);
@@ -264,7 +251,6 @@
       processContour();
     }
 
-    // ฟังก์ชันคำนวณลายเส้น
     function processContour() {
       if (!rawImg) return;
       const w = resultCanvas.width;
@@ -310,7 +296,6 @@
         }
       }
 
-      // วาดเส้นแบบ Uniform Monoline ขอบมน
       resultCtx.clearRect(0, 0, w, h);
       resultCtx.fillStyle = '#222222';
       const r = thick / 2;
@@ -326,7 +311,6 @@
       }
     }
 
-    // Sliders Event
     ['detail', 'thick', 'dots'].forEach(id => {
       document.getElementById(id).addEventListener('input', (e) => {
         document.getElementById(id + 'Val').innerText = e.target.value;
@@ -334,16 +318,15 @@
       });
     });
 
-    // ==========================================
-    // ระบบบันทึกรูปสำหรับมือถือ (iOS & Android)
-    // ==========================================
+    // ========================================================
+    // ระบบบันทึก: แยกการทำงานระหว่าง PC และ มือถือ อย่างแม่นยำ
+    // ========================================================
     document.getElementById('saveBtn').onclick = async () => {
       if (!rawImg) {
         alert('กรุณาเลือกรูปภาพก่อนครับ');
         return;
       }
 
-      // สร้าง Canvas สีขาวรองหลัง (เพื่อนำไปพิมพ์/ลงสีได้สะดวก)
       const exportCanvas = document.createElement('canvas');
       exportCanvas.width = resultCanvas.width;
       exportCanvas.height = resultCanvas.height;
@@ -352,29 +335,41 @@
       exCtx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
       exCtx.drawImage(resultCanvas, 0, 0);
 
-      // ตรวจสอบว่ามือถือรองรับ Web Share API หรือไม่ (iOS/Android ส่วนใหญ่รองรับ)
-      exportCanvas.toBlob(async (blob) => {
-        const file = new File([blob], 'contour-lineart.png', { type: 'image/png' });
-        
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          try {
-            await navigator.share({
-              files: [file],
-              title: 'บันทึกรูปลายเส้น',
-              text: 'ลายเส้นจาก Clean Contour Studio'
-            });
-            return;
-          } catch (err) {
-            // ถ้ายกเลิกการแชร์ ให้สลับไปใช้วิธีดาวน์โหลดปกติ
-          }
-        }
+      // ตรวจสอบว่าเปิดบนมือถือจริงๆ หรือไม่ (Android / iPhone / iPad)
+      const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
-        // วิธีสำรอง: ดาวน์โหลดโดยตรง
+      // ฟังก์ชันดาวน์โหลดตรงลงโฟลเดอร์ Downloads (สำหรับ PC)
+      const downloadDirectly = () => {
         const a = document.createElement('a');
         a.href = exportCanvas.toDataURL('image/png');
         a.download = 'contour-lineart.png';
+        document.body.appendChild(a);
         a.click();
-      }, 'image/png');
+        document.body.removeChild(a);
+      };
+
+      // ถ้าเป็นมือถือ ให้ใช้ระบบบันทึกรูปเข้า Gallery
+      if (isMobile && navigator.canShare) {
+        exportCanvas.toBlob(async (blob) => {
+          const file = new File([blob], 'contour-lineart.png', { type: 'image/png' });
+          if (navigator.canShare({ files: [file] })) {
+            try {
+              await navigator.share({
+                files: [file],
+                title: 'บันทึกรูปลายเส้น',
+              });
+              return;
+            } catch (err) {
+              downloadDirectly();
+            }
+          } else {
+            downloadDirectly();
+          }
+        }, 'image/png');
+      } else {
+        // ถ้าเป็น PC / คอมพิวเตอร์ -> บันทึกลงโฟลเดอร์ Downloads โดยตรงทันที ไม่เปิดแชร์
+        downloadDirectly();
+      }
     };
   </script>
 </body>
