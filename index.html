@@ -2,116 +2,238 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8">
-  <title>Clean Contour Studio (ถอดแบบจากคลิป)</title>
+  <!-- ล็อกขนาดหน้าจอมือถือไม่ให้ขยายหรือเลื่อนโยกไปมา -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Clean Contour Mobile</title>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body { background: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+    * { 
+      box-sizing: border-box; 
+      margin: 0; 
+      padding: 0; 
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
     
-    /* กล่องหน้าต่างแบบในคลิป */
-    .modal-card { background: #fff; width: 100%; max-width: 620px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); padding: 24px; }
-    .modal-header { text-align: center; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 12px; }
-    .modal-header h2 { font-size: 1.25rem; color: #2d3436; }
-    .modal-header p { font-size: 0.85rem; color: #636e72; margin-top: 4px; }
+    /* ล็อกความกว้างหน้าจอ ป้องกันการเลื่อนซ้ายขวา */
+    html, body {
+      width: 100%;
+      max-width: 100vw;
+      overflow-x: hidden;
+      background: #f1f2f6;
+      color: #2d3436;
+      display: flex;
+      justify-content: center;
+    }
 
-    /* โซนอัปโหลด */
-    #dropzone { border: 2px dashed #b2bec3; border-radius: 10px; padding: 15px; text-align: center; cursor: pointer; background: #fafafa; font-size: 0.85rem; color: #636e72; margin-bottom: 15px; transition: 0.2s; }
-    #dropzone:hover { border-color: #0984e3; background: #f0f7ff; }
+    .app-container {
+      width: 100%;
+      max-width: 500px;
+      min-height: 100vh;
+      background: #ffffff;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.05);
+    }
 
-    /* แถบปรับค่า 3 ตัวแบบในคลิป */
-    .controls { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
-    .control-row { display: flex; align-items: center; justify-content: space-between; gap: 15px; }
-    .control-row label { font-size: 0.85rem; color: #2d3436; font-weight: 500; min-width: 140px; }
-    .control-row input[type=range] { flex-grow: 1; accent-color: #2d3436; }
-    .val-badge { font-size: 0.85rem; font-weight: bold; width: 35px; text-align: right; color: #0984e3; }
+    /* หัวข้อ */
+    .header { text-align: center; padding-bottom: 8px; border-bottom: 1px solid #f1f2f6; }
+    .header h1 { font-size: 1.15rem; color: #2d3436; }
+    .header p { font-size: 0.75rem; color: #747d8c; margin-top: 2px; }
 
-    /* โหมดตัวเลือก */
-    .mode-select { display: flex; gap: 15px; background: #f8f9fa; padding: 10px 14px; border-radius: 8px; margin-bottom: 15px; font-size: 0.8rem; }
-    .mode-select label { display: flex; align-items: center; gap: 6px; cursor: pointer; color: #2d3436; }
+    /* ปุ่มเลือกรูป */
+    #dropzone {
+      border: 2px dashed #0984e3;
+      background: #f0f7ff;
+      border-radius: 12px;
+      padding: 14px;
+      text-align: center;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: bold;
+      color: #0984e3;
+    }
 
-    /* พรีวิวเทียบ 2 ฝั่ง ซ้าย-ขวา แบบในคลิป */
-    .preview-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
-    .preview-box { border: 1px solid #e1e4e8; border-radius: 10px; padding: 10px; text-align: center; background: #fff; }
-    .preview-title { font-size: 0.75rem; font-weight: bold; color: #888; text-transform: uppercase; margin-bottom: 8px; }
-    .preview-area { height: 220px; display: flex; align-items: center; justify-content: center; background: repeating-conic-gradient(#f1f2f6 0% 25%, #fff 0% 50%) 50% / 16px 16px; border-radius: 6px; overflow: hidden; }
-    .preview-area img, .preview-area canvas { max-width: 90%; max-height: 90%; object-fit: contain; }
+    /* พรีวิวภาพคู่ ซ้าย-ขวา */
+    .preview-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      width: 100%;
+    }
+    .preview-card {
+      border: 1px solid #e1e4e8;
+      border-radius: 10px;
+      padding: 8px;
+      background: #fafafa;
+      text-align: center;
+    }
+    .preview-title { font-size: 0.7rem; font-weight: bold; color: #747d8c; margin-bottom: 6px; }
+    .preview-box {
+      width: 100%;
+      height: 160px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: repeating-conic-gradient(#eee 0% 25%, #fff 0% 50%) 50% / 14px 14px;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .preview-box img, .preview-box canvas {
+      max-width: 95%;
+      max-height: 95%;
+      object-fit: contain;
+    }
+
+    /* แผงควบคุม */
+    .controls-panel {
+      background: #f8f9fa;
+      border-radius: 12px;
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .control-item { display: flex; flex-direction: column; gap: 4px; }
+    .control-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #2f3542;
+    }
+    
+    /* สไลเดอร์ปรับแต่งขนาดให้สัมผัสง่าย */
+    input[type=range] {
+      width: 100%;
+      height: 28px;
+      touch-action: pan-x; /* ป้องกันจอดิ้นเวลาลากนิ้ว */
+      accent-color: #0984e3;
+    }
+
+    /* ปุ่มสลับโหมด */
+    .mode-group {
+      display: flex;
+      gap: 10px;
+      background: #e4e7eb;
+      padding: 4px;
+      border-radius: 8px;
+    }
+    .mode-btn {
+      flex: 1;
+      padding: 8px 4px;
+      border: none;
+      background: transparent;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #57606f;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .mode-btn.active {
+      background: #ffffff;
+      color: #0984e3;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
 
     /* ปุ่มดาวน์โหลด */
-    .btn-download { width: 100%; padding: 12px; background: #2d3436; color: white; border: none; border-radius: 8px; font-size: 0.95rem; font-weight: bold; cursor: pointer; transition: 0.2s; }
-    .btn-download:hover { background: #0984e3; }
+    .btn-save {
+      margin-top: auto;
+      width: 100%;
+      padding: 14px;
+      background: #0984e3;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .btn-save:active { background: #076fc2; transform: scale(0.99); }
   </style>
 </head>
 <body>
 
-  <div class="modal-card">
-    <div class="modal-header">
-      <h2>Tiszta kontúr (สกัดเส้นขอบคมชัด)</h2>
-      <p>สร้างลายเส้นสมุดระบายสีสำหรับสติกเกอร์และงานระบายสี</p>
+  <div class="app-container">
+    <div class="header">
+      <h1>Clean Contour Studio</h1>
+      <p>สกัดลายเส้นคมชัดสำหรับสติกเกอร์และสมุดระบายสี</p>
     </div>
 
-    <!-- โซนวางรูปภาพ -->
-    <div id="dropzone">📂 คลิกเลือกภาพ / ลากรูปมาวาง / กด [ Ctrl + V ] แปะรูปภาพ</div>
+    <!-- ปุ่มเลือกรูปภาพจากมือถือ -->
+    <div id="dropzone">📷 แตะที่นี่เพื่อเลือกรูปจากคลังภาพ</div>
     <input type="file" id="fileInput" accept="image/*" style="display:none">
 
-    <!-- โหมดการสร้างเส้น -->
-    <div class="mode-select">
-      <label><input type="radio" name="contourMode" value="draw" checked> ดึงจากเส้นภาพวาด (Drawings)</label>
-      <label><input type="radio" name="contourMode" value="color"> วาดล้อมรอบรอยต่อสี (Color Edges)</label>
+    <!-- พรีวิวเทียบภาพ 2 ฝั่ง -->
+    <div class="preview-container">
+      <div class="preview-card">
+        <div class="preview-title">ต้นฉบับ</div>
+        <div class="preview-box"><img id="origImg" style="display:none;"></div>
+      </div>
+      <div class="preview-card">
+        <div class="preview-title" style="color:#0984e3;">ลายเส้นสกัด</div>
+        <div class="preview-box"><canvas id="resultCanvas"></canvas></div>
+      </div>
     </div>
 
-    <!-- คอนโทรล 3 แถบแบบในวิดีโอ -->
-    <div class="controls">
-      <!-- 1. Részletesség -->
-      <div class="control-row">
-        <label>ความละเอียด (Detail):</label>
+    <!-- แผงสลับโหมดการดึงเส้น -->
+    <div class="mode-group">
+      <button class="mode-btn active" id="btnModeDraw" onclick="setMode('draw')">ดึงตามเส้นวาดเดิม</button>
+      <button class="mode-btn" id="btnModeColor" onclick="setMode('color')">วาดล้อมรอยต่อสี</button>
+    </div>
+
+    <!-- แถบปรับสไลเดอร์ 3 ตัว (เหมือนในคลิป) -->
+    <div class="controls-panel">
+      <!-- 1. ความละเอียด -->
+      <div class="control-item">
+        <div class="control-label">
+          <span>ความละเอียดดีเทล (Detail)</span>
+          <span id="detailVal">65</span>
+        </div>
         <input type="range" id="detail" min="20" max="95" value="65">
-        <span class="val-badge" id="detailVal">65</span>
       </div>
 
-      <!-- 2. Vonal vastagság -->
-      <div class="control-row">
-        <label>ความหนาเส้น (Thickness):</label>
-        <input type="range" id="thickness" min="1.0" max="6.0" step="0.5" value="2.5">
-        <span class="val-badge" id="thicknessVal">2.5</span>
+      <!-- 2. ความหนาเส้น -->
+      <div class="control-item">
+        <div class="control-label">
+          <span>ความหนาเส้น (Thickness)</span>
+          <span id="thickVal">2.5</span>
+        </div>
+        <input type="range" id="thick" min="1.0" max="6.0" step="0.5" value="2.5">
       </div>
 
-      <!-- 3. Apró pöttyök szűrése -->
-      <div class="control-row">
-        <label>กรองจุดเล็กๆ (Filter Dots):</label>
-        <input type="range" id="filterDots" min="0" max="8" value="3">
-        <span class="val-badge" id="filterDotsVal">3</span>
+      <!-- 3. ลบจุดฝุ่น/Noise -->
+      <div class="control-item">
+        <div class="control-label">
+          <span>ลบจุดฝุ่นเล็กๆ (Filter Dots)</span>
+          <span id="dotsVal">3</span>
+        </div>
+        <input type="range" id="dots" min="0" max="8" value="3">
       </div>
     </div>
 
-    <!-- จอเปรียบเทียบซ้าย-ขวา แบบในคลิป -->
-    <div class="preview-grid">
-      <div class="preview-box">
-        <div class="preview-title">ต้นฉบับ (Eredeti)</div>
-        <div class="preview-area"><img id="origView" style="display:none;"></div>
-      </div>
-      <div class="preview-box">
-        <div class="preview-title" style="color:#0984e3;">เส้นขอบคมชัด (Tiszta kontúr)</div>
-        <div class="preview-area"><canvas id="resultCanvas"></canvas></div>
-      </div>
-    </div>
-
-    <button class="btn-download" id="downloadBtn">ดาวน์โหลดภาพลายเส้นคมชัด (PNG โปร่งใส)</button>
+    <!-- ปุ่มบันทึกลงมือถือ -->
+    <button class="btn-save" id="saveBtn">📥 บันทึกรูปลายเส้นลงเครื่อง</button>
   </div>
 
   <script>
     let rawImg = null;
+    let currentMode = 'draw';
+
     const dropzone = document.getElementById('dropzone');
     const fileInput = document.getElementById('fileInput');
-    const origView = document.getElementById('origView');
+    const origImg = document.getElementById('origImg');
     const resultCanvas = document.getElementById('resultCanvas');
     const resultCtx = resultCanvas.getContext('2d');
 
-    // จัดการอัปโหลด & Paste รูป
+    // จัดการเลือกไฟล์ภาพบนมือถือ
     dropzone.onclick = () => fileInput.click();
     fileInput.onchange = (e) => loadFile(e.target.files[0]);
-    window.addEventListener('paste', (e) => {
-      const item = [...e.clipboardData.items].find(x => x.type.includes('image'));
-      if (item) loadFile(item.getAsFile());
-    });
 
     function loadFile(file) {
       if (!file) return;
@@ -119,117 +241,140 @@
       reader.onload = (e) => {
         rawImg = new Image();
         rawImg.onload = () => {
-          origView.src = e.target.result;
-          origView.style.display = 'block';
+          origImg.src = e.target.result;
+          origImg.style.display = 'block';
 
-          // จำกัดขนาดพรีวิวเพื่อความเร็วแบบเรียลไทม์
+          // ย่อขนาดให้พอดีหน้าจอมือถือและประมวลผลเร็ว
           const maxDim = 800;
           let scale = Math.min(1, maxDim / Math.max(rawImg.width, rawImg.height));
           resultCanvas.width = Math.round(rawImg.width * scale);
           resultCanvas.height = Math.round(rawImg.height * scale);
 
-          generateCleanContour();
+          processContour();
         };
         rawImg.src = e.target.result;
       };
       reader.readAsDataURL(file);
     }
 
-    // ฟังก์ชันสร้าง Clean Contour แบบในแอปเป๊ะๆ
-    function generateCleanContour() {
+    function setMode(mode) {
+      currentMode = mode;
+      document.getElementById('btnModeDraw').classList.toggle('active', mode === 'draw');
+      document.getElementById('btnModeColor').classList.toggle('active', mode === 'color');
+      processContour();
+    }
+
+    // ฟังก์ชันคำนวณลายเส้น
+    function processContour() {
       if (!rawImg) return;
       const w = resultCanvas.width;
       const h = resultCanvas.height;
 
-      // 1. อ่านค่าจาก UI
       const detail = parseInt(document.getElementById('detail').value);
-      const thickness = parseFloat(document.getElementById('thickness').value);
-      const filterDots = parseInt(document.getElementById('filterDots').value);
-      const mode = document.querySelector('input[name="contourMode"]:checked').value;
+      const thick = parseFloat(document.getElementById('thick').value);
+      const dots = parseInt(document.getElementById('dots').value);
 
-      // 2. เตรียม Canvas คำนวณ
       const tempCan = document.createElement('canvas');
       tempCan.width = w;
       tempCan.height = h;
       const tCtx = tempCan.getContext('2d');
 
-      // กรองจุดเล็กๆ ออกล่วงหน้า (Apró pöttyök szűrése)
-      tCtx.filter = filterDots > 0 ? `blur(${filterDots * 0.6}px)` : 'none';
+      tCtx.filter = dots > 0 ? `blur(${dots * 0.6}px)` : 'none';
       tCtx.drawImage(rawImg, 0, 0, w, h);
-      tCtx.filter = 'none';
 
       const imgData = tCtx.getImageData(0, 0, w, h);
       const d = imgData.data;
 
-      // 3. สกัดเส้นขอบ (ตามโหมดที่เลือก)
       const gray = new Float32Array(w * h);
       for (let i = 0; i < d.length; i += 4) {
-        // คำนวณความสว่าง หรือ ขอบสี
         gray[i / 4] = 0.299 * d[i] + 0.587 * d[i+1] + 0.114 * d[i+2];
       }
 
-      // สร้างแผนผังเส้นขอบ (Edge Gradient Map)
       const edgeMap = new Uint8Array(w * h);
-      const threshold = (100 - detail) * 1.5; // แปลง Detail เป็น Sensitivity
+      const threshold = (100 - detail) * 1.5;
 
       for (let y = 1; y < h - 1; y++) {
         for (let x = 1; x < w - 1; x++) {
           let idx = y * w + x;
-          
-          if (mode === 'draw') {
-            // โหมดดึงเส้นภาพวาด: วัดความต่างของเส้นดำในรูป
+          if (currentMode === 'draw') {
             let diffX = gray[idx + 1] - gray[idx - 1];
             let diffY = gray[idx + w] - gray[idx - w];
             let mag = Math.sqrt(diffX * diffX + diffY * diffY);
-            if (mag > threshold && gray[idx] < 200) {
-              edgeMap[idx] = 1;
-            }
+            if (mag > threshold && gray[idx] < 200) edgeMap[idx] = 1;
           } else {
-            // โหมดรอยต่อสี: วัดความต่างของเนื้อสี RGB โดยรอบ
             let i1 = ((y) * w + (x + 1)) * 4;
             let i2 = ((y) * w + (x - 1)) * 4;
-            let colorDiff = Math.abs(d[i1] - d[i2]) + Math.abs(d[i1+1] - d[i2+1]) + Math.abs(d[i1+2] - d[i2+2]);
-            if (colorDiff > threshold * 2.5) {
-              edgeMap[idx] = 1;
-            }
+            let cDiff = Math.abs(d[i1] - d[i2]) + Math.abs(d[i1+1] - d[i2+1]) + Math.abs(d[i1+2] - d[i2+2]);
+            if (cDiff > threshold * 2.5) edgeMap[idx] = 1;
           }
         }
       }
 
-      // 4. เรนเดอร์ลง Result Canvas (ความหนาเส้นเท่ากันสไตล์ Monoline)
+      // วาดเส้นแบบ Uniform Monoline ขอบมน
       resultCtx.clearRect(0, 0, w, h);
       resultCtx.fillStyle = '#222222';
+      const r = thick / 2;
 
-      const radius = thickness / 2;
-      for (let y = 0; y < h; y += 1) {
-        for (let x = 0; x < w; x += 1) {
+      for (let y = 0; y < h; y++) {
+        for (let x = 0; x < w; x++) {
           if (edgeMap[y * w + x] === 1) {
             resultCtx.beginPath();
-            resultCtx.arc(x, y, radius, 0, Math.PI * 2);
+            resultCtx.arc(x, y, r, 0, Math.PI * 2);
             resultCtx.fill();
           }
         }
       }
     }
 
-    // Event Sliders Real-time
-    ['detail', 'thickness', 'filterDots'].forEach(id => {
+    // Sliders Event
+    ['detail', 'thick', 'dots'].forEach(id => {
       document.getElementById(id).addEventListener('input', (e) => {
         document.getElementById(id + 'Val').innerText = e.target.value;
-        generateCleanContour();
+        processContour();
       });
     });
 
-    document.querySelectorAll('input[name="contourMode"]').forEach(radio => {
-      radio.addEventListener('change', generateCleanContour);
-    });
+    // ==========================================
+    // ระบบบันทึกรูปสำหรับมือถือ (iOS & Android)
+    // ==========================================
+    document.getElementById('saveBtn').onclick = async () => {
+      if (!rawImg) {
+        alert('กรุณาเลือกรูปภาพก่อนครับ');
+        return;
+      }
 
-    // ดาวน์โหลดรูป PNG ลายเส้นคมชัดพื้นหลังใส
-    document.getElementById('downloadBtn').onclick = () => {
-      const a = document.createElement('a');
-      a.href = resultCanvas.toDataURL('image/png');
-      a.download = 'clean-contour.png';
-      a.click();
+      // สร้าง Canvas สีขาวรองหลัง (เพื่อนำไปพิมพ์/ลงสีได้สะดวก)
+      const exportCanvas = document.createElement('canvas');
+      exportCanvas.width = resultCanvas.width;
+      exportCanvas.height = resultCanvas.height;
+      const exCtx = exportCanvas.getContext('2d');
+      exCtx.fillStyle = '#ffffff';
+      exCtx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
+      exCtx.drawImage(resultCanvas, 0, 0);
+
+      // ตรวจสอบว่ามือถือรองรับ Web Share API หรือไม่ (iOS/Android ส่วนใหญ่รองรับ)
+      exportCanvas.toBlob(async (blob) => {
+        const file = new File([blob], 'contour-lineart.png', { type: 'image/png' });
+        
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          try {
+            await navigator.share({
+              files: [file],
+              title: 'บันทึกรูปลายเส้น',
+              text: 'ลายเส้นจาก Clean Contour Studio'
+            });
+            return;
+          } catch (err) {
+            // ถ้ายกเลิกการแชร์ ให้สลับไปใช้วิธีดาวน์โหลดปกติ
+          }
+        }
+
+        // วิธีสำรอง: ดาวน์โหลดโดยตรง
+        const a = document.createElement('a');
+        a.href = exportCanvas.toDataURL('image/png');
+        a.download = 'contour-lineart.png';
+        a.click();
+      }, 'image/png');
     };
   </script>
 </body>
