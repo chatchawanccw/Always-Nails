@@ -3,7 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Clean Contour Studio Pro</title>
+  <title>Clean Contour Ultra-HD Studio</title>
+  <!-- โหลด ImageTracer สำหรับสร้างไฟล์เวกเตอร์ SVG แท้ ไม่แตก 100% -->
+  <script src="https://cdn.jsdelivr.net/npm/imagetracerjs@1.2.6/imagetracer_v1.2.6.min.js"></script>
   <style>
     * { 
       box-sizing: border-box; 
@@ -51,7 +53,18 @@
       color: #0984e3;
     }
 
-    /* พรีวิวภาพ */
+    .res-badge {
+      font-size: 0.7rem;
+      background: #e1f0fa;
+      color: #0984e3;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-weight: bold;
+      text-align: center;
+      display: none;
+    }
+
+    /* พรีวิว */
     .preview-container {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -82,7 +95,6 @@
       object-fit: contain;
     }
 
-    /* เลือกประเภทรูป */
     .type-selector {
       display: flex;
       gap: 8px;
@@ -100,7 +112,6 @@
       color: #4a5568;
       border-radius: 8px;
       cursor: pointer;
-      transition: 0.2s;
     }
     .type-btn.active {
       background: #ffffff;
@@ -108,7 +119,6 @@
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
 
-    /* แผงควบคุม */
     .controls-panel {
       background: #f8f9fa;
       border-radius: 12px;
@@ -133,33 +143,54 @@
       accent-color: #0984e3;
     }
 
-    .btn-save {
+    /* ปุ่มดาวน์โหลด 2 แบบ */
+    .save-group {
       margin-top: auto;
-      width: 100%;
-      padding: 14px;
-      background: #0984e3;
-      color: #fff;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .btn-save {
+      padding: 12px;
       border: none;
       border-radius: 10px;
-      font-size: 0.95rem;
+      font-size: 0.85rem;
       font-weight: bold;
       cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      transition: 0.15s;
     }
-    .btn-save:hover { background: #0873c4; }
+    .btn-png { background: #0984e3; color: #fff; }
+    .btn-svg { background: #2d3436; color: #fff; }
+    .btn-save:hover { opacity: 0.9; }
+    .btn-save small { font-size: 0.65rem; opacity: 0.8; font-weight: normal; }
+
+    #loadingText {
+      display: none;
+      text-align: center;
+      font-size: 0.8rem;
+      color: #0984e3;
+      font-weight: bold;
+      margin-top: 4px;
+    }
   </style>
 </head>
 <body>
 
   <div class="app-container">
     <div class="header">
-      <h1>Clean Contour Studio Pro</h1>
-      <p>รองรับทั้งภาพสติกเกอร์ และภาพถ่ายรายละเอียดสูง</p>
+      <h1>Clean Contour Ultra-HD</h1>
+      <p>สกัดลายเส้นความละเอียดสูงสุดระดับ Master</p>
     </div>
 
     <div id="dropzone">📷 คลิกเลือกภาพ / ลากรูปมาวาง / กด [ Ctrl+V ]</div>
     <input type="file" id="fileInput" accept="image/*" style="display:none">
+    <div class="res-badge" id="resBadge">ความละเอียดไฟล์ออก: 0 x 0 px</div>
 
-    <!-- ปุ่มสลับโหมดประเภทรูปภาพ -->
     <div class="type-selector">
       <button class="type-btn" id="btnModeSimple" onclick="setType('simple')">ลายเส้นทั่วไป / สติกเกอร์</button>
       <button class="type-btn active" id="btnModeComplex" onclick="setType('complex')">ภาพถ่าย / ดีเทลเยอะ ✨</button>
@@ -171,14 +202,12 @@
         <div class="preview-box"><img id="origImg" style="display:none;"></div>
       </div>
       <div class="preview-card">
-        <div class="preview-title" style="color:#0984e3;">ลายเส้นสกัดคมชัด</div>
-        <div class="preview-box"><canvas id="resultCanvas"></canvas></div>
+        <div class="preview-title" style="color:#0984e3;">ลายเส้นคมชัด</div>
+        <div class="preview-box"><canvas id="previewCanvas"></canvas></div>
       </div>
     </div>
 
-    <!-- แผงปรับความละเอียด -->
     <div class="controls-panel">
-      <!-- 1. ความไวในการจับเส้นโครงสร้าง -->
       <div class="control-item">
         <div class="control-label">
           <span>ความคมชัดเส้นโครงหลัก (Sensitivity)</span>
@@ -187,8 +216,7 @@
         <input type="range" id="sensitivity" min="10" max="90" value="50">
       </div>
 
-      <!-- 2. ตัดความรกของผิว/เงา (หัวใจสำคัญของรูปรายละเอียดเยอะ) -->
-      <div class="control-item" id="cleanGroup">
+      <div class="control-item">
         <div class="control-label">
           <span style="color:#0984e3;">ตัดพื้นผิวรก / เงารบกวน (Texture Suppress)</span>
           <span id="suppressVal">4</span>
@@ -196,28 +224,41 @@
         <input type="range" id="suppress" min="1" max="10" value="4">
       </div>
 
-      <!-- 3. ความหนาเส้น -->
       <div class="control-item">
         <div class="control-label">
           <span>ความหนาเส้น (Thickness)</span>
           <span id="thickVal">2.0</span>
         </div>
-        <input type="range" id="thick" min="1.0" max="5.0" step="0.5" value="2.0">
+        <input type="range" id="thick" min="1.0" max="6.0" step="0.5" value="2.0">
       </div>
     </div>
 
-    <button class="btn-save" id="saveBtn">📥 บันทึกรูปลายเส้นลงเครื่อง</button>
+    <div id="loadingText">⏳ กำลังประมวลผลความละเอียดสูงระดับ Master...</div>
+
+    <!-- ปุ่มเซฟ 2 ระบบ -->
+    <div class="save-group">
+      <button class="btn-save btn-png" id="savePngBtn">
+        <span>💾 บันทึก Ultra-HD PNG</span>
+        <small>ขนาดเต็มภาพจริง คมชัด 100%</small>
+      </button>
+      <button class="btn-save btn-svg" id="saveSvgBtn">
+        <span>✨ บันทึก SVG Vector</span>
+        <small>ซูมไม่แตก 100% นำไปพิมพ์ได้คมกริบ</small>
+      </button>
+    </div>
   </div>
 
   <script>
     let rawImg = null;
-    let imageType = 'complex'; // ค่าเริ่มต้นเป็นแบบภาพรายละเอียดเยอะ
+    let imageType = 'complex';
 
     const dropzone = document.getElementById('dropzone');
     const fileInput = document.getElementById('fileInput');
     const origImg = document.getElementById('origImg');
-    const resultCanvas = document.getElementById('resultCanvas');
-    const resultCtx = resultCanvas.getContext('2d');
+    const previewCanvas = document.getElementById('previewCanvas');
+    const previewCtx = previewCanvas.getContext('2d');
+    const resBadge = document.getElementById('resBadge');
+    const loadingText = document.getElementById('loadingText');
 
     dropzone.onclick = () => fileInput.click();
     fileInput.onchange = (e) => loadFile(e.target.files[0]);
@@ -235,12 +276,16 @@
           origImg.src = e.target.result;
           origImg.style.display = 'block';
 
-          const maxDim = 800;
-          let scale = Math.min(1, maxDim / Math.max(rawImg.width, rawImg.height));
-          resultCanvas.width = Math.round(rawImg.width * scale);
-          resultCanvas.height = Math.round(rawImg.height * scale);
+          // แสดงขนาดจริงของรูปที่ผู้ใช้ใส่เข้ามา
+          resBadge.style.display = 'block';
+          resBadge.innerText = `ความละเอียดเซฟจริง: ${rawImg.naturalWidth} x ${rawImg.naturalHeight} px (ตามต้นฉบับ)`;
 
-          processImage();
+          // ย่อเฉพาะ "หน้าจอพรีวิว" เพื่อให้เลื่อนสไลเดอร์ได้ลื่น ไม่หน่วงเครื่อง
+          let scale = Math.min(1, 600 / Math.max(rawImg.naturalWidth, rawImg.naturalHeight));
+          previewCanvas.width = Math.round(rawImg.naturalWidth * scale);
+          previewCanvas.height = Math.round(rawImg.naturalHeight * scale);
+
+          renderContour(previewCanvas, scale);
         };
         rawImg.src = e.target.result;
       };
@@ -252,7 +297,6 @@
       document.getElementById('btnModeSimple').classList.toggle('active', type === 'simple');
       document.getElementById('btnModeComplex').classList.toggle('active', type === 'complex');
       
-      // ปรับค่าเริ่มต้นให้เหมาะสมกับแต่ละโหมด
       if (type === 'complex') {
         document.getElementById('suppress').value = 4;
         document.getElementById('suppressVal').innerText = "4";
@@ -264,20 +308,20 @@
         document.getElementById('sensitivity').value = 65;
         document.getElementById('sensVal').innerText = "65";
       }
-      processImage();
+      renderContour(previewCanvas, previewCanvas.width / rawImg.naturalWidth);
     }
 
-    // อัลกอริทึมสำหรับภาพรายละเอียดเยอะ (DoG + Adaptive Threshold)
-    function processImage() {
+    // ฟังก์ชันคำนวณลายเส้น (รองรับการเรนเดอร์ทั้งขนาดเล็ก และขนาดความละเอียดสูง 100%)
+    function renderContour(targetCanvas, scaleRatio) {
       if (!rawImg) return;
-      const w = resultCanvas.width;
-      const h = resultCanvas.height;
+      const w = targetCanvas.width;
+      const h = targetCanvas.height;
+      const ctx = targetCanvas.getContext('2d');
 
       const sens = parseInt(document.getElementById('sensitivity').value);
-      const suppress = parseInt(document.getElementById('suppress').value);
-      const thick = parseFloat(document.getElementById('thick').value);
+      const suppress = parseInt(document.getElementById('suppress').value) * scaleRatio;
+      const thick = parseFloat(document.getElementById('thick').value) * scaleRatio;
 
-      // สร้าง Canvas ย่อย 2 ตัว สำหรับทำ Difference of Gaussians (ตัดเงาไล่ระดับออก)
       const c1 = document.createElement('canvas');
       const c2 = document.createElement('canvas');
       c1.width = c2.width = w;
@@ -285,12 +329,10 @@
       const ctx1 = c1.getContext('2d');
       const ctx2 = c2.getContext('2d');
 
-      // เลเยอร์ 1: กรอง Texture พื้นผิวออก (ยิ่งภาพรก ยิ่งต้องเบลอเกลี่ยพื้นผิว)
       ctx1.filter = `blur(${suppress * 0.4}px) grayscale(100%)`;
       ctx1.drawImage(rawImg, 0, 0, w, h);
 
-      // เลเยอร์ 2: รัศมีกว้างขึ้น เพื่อใช้หักล้างแสงเงา
-      ctx2.filter = `blur(${suppress * 0.4 + 2.5}px) grayscale(100%)`;
+      ctx2.filter = `blur(${suppress * 0.4 + (2.5 * scaleRatio)}px) grayscale(100%)`;
       ctx2.drawImage(rawImg, 0, 0, w, h);
 
       const d1 = ctx1.getImageData(0, 0, w, h).data;
@@ -304,79 +346,139 @@
         let v2 = d2[i];
 
         if (imageType === 'complex') {
-          // โหมดภาพถ่าย: จับเฉพาะจุดที่มีความต่างเฉียบพลัน (ขอบวัตถุแท้จริง) ปล่อยผ่านแสงเงา
           let diff = v2 - v1;
-          if (diff > threshold) {
-            edgeMap[i / 4] = 1;
-          }
+          if (diff > threshold) edgeMap[i / 4] = 1;
         } else {
-          // โหมดภาพทั่วไป: ตรวจจับขอบปกติ
           let diff = Math.abs(v1 - v2);
-          if (diff > threshold * 1.5 && v1 < 210) {
-            edgeMap[i / 4] = 1;
-          }
+          if (diff > threshold * 1.5 && v1 < 210) edgeMap[i / 4] = 1;
         }
       }
 
-      // วาดเส้นแบบ Monoline คมชัด
-      resultCtx.clearRect(0, 0, w, h);
-      resultCtx.fillStyle = '#1e272e';
-      const r = thick / 2;
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = '#111111';
+      const r = Math.max(0.5, thick / 2);
 
       for (let y = 0; y < h; y++) {
         for (let x = 0; x < w; x++) {
           if (edgeMap[y * w + x] === 1) {
-            resultCtx.beginPath();
-            resultCtx.arc(x, y, r, 0, Math.PI * 2);
-            resultCtx.fill();
+            ctx.beginPath();
+            ctx.arc(x, y, r, 0, Math.PI * 2);
+            ctx.fill();
           }
         }
       }
     }
 
-    // Sliders
+    // อัปเดตพรีวิวแบบเรียลไทม์
     ['sensitivity', 'suppress', 'thick'].forEach(id => {
       document.getElementById(id).addEventListener('input', (e) => {
         const valSpan = document.getElementById(id === 'sensitivity' ? 'sensVal' : id === 'suppress' ? 'suppressVal' : 'thickVal');
         valSpan.innerText = e.target.value;
-        processImage();
+        if (rawImg) renderContour(previewCanvas, previewCanvas.width / rawImg.naturalWidth);
       });
     });
 
-    // ระบบบันทึก (แยก PC และ มือถือ)
-    document.getElementById('saveBtn').onclick = () => {
+    // ========================================================
+    // 1. ระบบบันทึกแบบ Ultra-HD PNG (ขนาดจริง 100% ไม่บีบภาพ)
+    // ========================================================
+    document.getElementById('savePngBtn').onclick = () => {
       if (!rawImg) return;
-      const exportCanvas = document.createElement('canvas');
-      exportCanvas.width = resultCanvas.width;
-      exportCanvas.height = resultCanvas.height;
-      const exCtx = exportCanvas.getContext('2d');
-      exCtx.fillStyle = '#ffffff';
-      exCtx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
-      exCtx.drawImage(resultCanvas, 0, 0);
+      loadingText.style.display = 'block';
 
-      const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-      const downloadDirectly = () => {
+      setTimeout(() => {
+        // สร้าง Canvas ขนาดเท่ารูปต้นฉบับจริง 100%
+        const hdCanvas = document.createElement('canvas');
+        hdCanvas.width = rawImg.naturalWidth;
+        hdCanvas.height = rawImg.naturalHeight;
+        
+        // เรนเดอร์ด้วยความละเอียดเต็ม (scaleRatio = 1.0)
+        renderContour(hdCanvas, 1.0);
+
+        // วางพื้นหลังสีขาวคมชัด
+        const finalCanvas = document.createElement('canvas');
+        finalCanvas.width = hdCanvas.width;
+        finalCanvas.height = hdCanvas.height;
+        const fCtx = finalCanvas.getContext('2d');
+        fCtx.fillStyle = '#ffffff';
+        fCtx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
+        fCtx.drawImage(hdCanvas, 0, 0);
+
+        // ดาวน์โหลด
+        const downloadAction = () => {
+          const a = document.createElement('a');
+          a.href = finalCanvas.toDataURL('image/png', 1.0);
+          a.download = `ultra-hd-lineart-${finalCanvas.width}x${finalCanvas.height}.png`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          loadingText.style.display = 'none';
+        };
+
+        const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+        if (isMobile && navigator.canShare) {
+          finalCanvas.toBlob(async (blob) => {
+            const file = new File([blob], 'ultra-hd-lineart.png', { type: 'image/png' });
+            if (navigator.canShare({ files: [file] })) {
+              try {
+                await navigator.share({ files: [file], title: 'บันทึกรูปลายเส้น HD' });
+                loadingText.style.display = 'none';
+                return;
+              } catch (e) { downloadAction(); }
+            } else { downloadAction(); }
+          }, 'image/png');
+        } else {
+          downloadAction();
+        }
+      }, 50);
+    };
+
+    // ========================================================
+    // 2. ระบบบันทึกแบบ SVG Vector (ซูมไม่แตก 100% เกรด Illustrator)
+    // ========================================================
+    document.getElementById('saveSvgBtn').onclick = () => {
+      if (!rawImg) return;
+      loadingText.style.display = 'block';
+
+      setTimeout(() => {
+        const hdCanvas = document.createElement('canvas');
+        hdCanvas.width = rawImg.naturalWidth;
+        hdCanvas.height = rawImg.naturalHeight;
+        renderContour(hdCanvas, 1.0);
+
+        const ctx = hdCanvas.getContext('2d');
+        const imgData = ctx.getImageData(0, 0, hdCanvas.width, hdCanvas.height);
+
+        // แปลงภาพลายเส้นเป็นเวกเตอร์แท้ๆ ด้วย ImageTracer
+        const options = {
+          corsenabled: false,
+          ltres: 1.5,
+          qtres: 1.5,
+          pathomit: 8,
+          colorsampling: 0,
+          numberofcolors: 2,
+          scale: 1
+        };
+
+        const svgString = ImageTracer.imagedataToSVG(imgData, options);
+        
+        // ลบพื้นหลังสีขาวออก เหลือเฉพาะเส้นเวกเตอร์ดำคมๆ
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(svgString, 'image/svg+xml');
+        const svg = doc.querySelector('svg');
+        svg.querySelectorAll('path').forEach(p => {
+          if (p.getAttribute('fill') === 'rgb(255,255,255)') p.remove();
+          else p.setAttribute('fill', '#111111');
+        });
+
+        const blob = new Blob([svg.outerHTML], { type: 'image/svg+xml' });
         const a = document.createElement('a');
-        a.href = exportCanvas.toDataURL('image/png');
-        a.download = 'clean-lineart.png';
+        a.href = URL.createObjectURL(blob);
+        a.download = 'vector-lineart.svg';
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
-      };
-
-      if (isMobile && navigator.canShare) {
-        exportCanvas.toBlob(async (blob) => {
-          const file = new File([blob], 'clean-lineart.png', { type: 'image/png' });
-          if (navigator.canShare({ files: [file] })) {
-            try {
-              await navigator.share({ files: [file], title: 'บันทึกรูปลายเส้น' });
-              return;
-            } catch (err) { downloadDirectly(); }
-          } else { downloadDirectly(); }
-        }, 'image/png');
-      } else {
-        downloadDirectly();
-      }
+        loadingText.style.display = 'none';
+      }, 50);
     };
   </script>
 </body>
