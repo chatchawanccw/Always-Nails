@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Clean Contour Studio</title>
+  <title>Clean Contour Studio Pro</title>
   <style>
     * { 
       box-sizing: border-box; 
@@ -31,11 +31,11 @@
       padding: 16px;
       display: flex;
       flex-direction: column;
-      gap: 14px;
+      gap: 12px;
       box-shadow: 0 0 20px rgba(0,0,0,0.05);
     }
 
-    .header { text-align: center; padding-bottom: 8px; border-bottom: 1px solid #f1f2f6; }
+    .header { text-align: center; padding-bottom: 6px; border-bottom: 1px solid #f1f2f6; }
     .header h1 { font-size: 1.15rem; color: #2d3436; }
     .header p { font-size: 0.75rem; color: #747d8c; margin-top: 2px; }
 
@@ -43,7 +43,7 @@
       border: 2px dashed #0984e3;
       background: #f0f7ff;
       border-radius: 12px;
-      padding: 14px;
+      padding: 12px;
       text-align: center;
       cursor: pointer;
       font-size: 0.85rem;
@@ -51,6 +51,7 @@
       color: #0984e3;
     }
 
+    /* พรีวิวภาพ */
     .preview-container {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -60,14 +61,14 @@
     .preview-card {
       border: 1px solid #e1e4e8;
       border-radius: 10px;
-      padding: 8px;
+      padding: 6px;
       background: #fafafa;
       text-align: center;
     }
-    .preview-title { font-size: 0.7rem; font-weight: bold; color: #747d8c; margin-bottom: 6px; }
+    .preview-title { font-size: 0.7rem; font-weight: bold; color: #747d8c; margin-bottom: 4px; }
     .preview-box {
       width: 100%;
-      height: 160px;
+      height: 170px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -81,15 +82,42 @@
       object-fit: contain;
     }
 
+    /* เลือกประเภทรูป */
+    .type-selector {
+      display: flex;
+      gap: 8px;
+      background: #edf2f7;
+      padding: 4px;
+      border-radius: 10px;
+    }
+    .type-btn {
+      flex: 1;
+      padding: 8px 4px;
+      border: none;
+      background: transparent;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #4a5568;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .type-btn.active {
+      background: #ffffff;
+      color: #0984e3;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    /* แผงควบคุม */
     .controls-panel {
       background: #f8f9fa;
       border-radius: 12px;
       padding: 12px 14px;
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 10px;
     }
-    .control-item { display: flex; flex-direction: column; gap: 4px; }
+    .control-item { display: flex; flex-direction: column; gap: 3px; }
     .control-label {
       display: flex;
       justify-content: space-between;
@@ -100,33 +128,9 @@
     
     input[type=range] {
       width: 100%;
-      height: 28px;
+      height: 24px;
       touch-action: pan-x;
       accent-color: #0984e3;
-    }
-
-    .mode-group {
-      display: flex;
-      gap: 10px;
-      background: #e4e7eb;
-      padding: 4px;
-      border-radius: 8px;
-    }
-    .mode-btn {
-      flex: 1;
-      padding: 8px 4px;
-      border: none;
-      background: transparent;
-      font-size: 0.75rem;
-      font-weight: 600;
-      color: #57606f;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-    .mode-btn.active {
-      background: #ffffff;
-      color: #0984e3;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
 
     .btn-save {
@@ -140,25 +144,26 @@
       font-size: 0.95rem;
       font-weight: bold;
       cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
     }
     .btn-save:hover { background: #0873c4; }
-    .btn-save:active { transform: scale(0.99); }
   </style>
 </head>
 <body>
 
   <div class="app-container">
     <div class="header">
-      <h1>Clean Contour Studio</h1>
-      <p>สกัดลายเส้นคมชัดสำหรับสติกเกอร์และสมุดระบายสี</p>
+      <h1>Clean Contour Studio Pro</h1>
+      <p>รองรับทั้งภาพสติกเกอร์ และภาพถ่ายรายละเอียดสูง</p>
     </div>
 
     <div id="dropzone">📷 คลิกเลือกภาพ / ลากรูปมาวาง / กด [ Ctrl+V ]</div>
     <input type="file" id="fileInput" accept="image/*" style="display:none">
+
+    <!-- ปุ่มสลับโหมดประเภทรูปภาพ -->
+    <div class="type-selector">
+      <button class="type-btn" id="btnModeSimple" onclick="setType('simple')">ลายเส้นทั่วไป / สติกเกอร์</button>
+      <button class="type-btn active" id="btnModeComplex" onclick="setType('complex')">ภาพถ่าย / ดีเทลเยอะ ✨</button>
+    </div>
 
     <div class="preview-container">
       <div class="preview-card">
@@ -166,39 +171,38 @@
         <div class="preview-box"><img id="origImg" style="display:none;"></div>
       </div>
       <div class="preview-card">
-        <div class="preview-title" style="color:#0984e3;">ลายเส้นสกัด</div>
+        <div class="preview-title" style="color:#0984e3;">ลายเส้นสกัดคมชัด</div>
         <div class="preview-box"><canvas id="resultCanvas"></canvas></div>
       </div>
     </div>
 
-    <div class="mode-group">
-      <button class="mode-btn active" id="btnModeDraw" onclick="setMode('draw')">ดึงตามเส้นวาดเดิม</button>
-      <button class="mode-btn" id="btnModeColor" onclick="setMode('color')">วาดล้อมรอยต่อสี</button>
-    </div>
-
+    <!-- แผงปรับความละเอียด -->
     <div class="controls-panel">
+      <!-- 1. ความไวในการจับเส้นโครงสร้าง -->
       <div class="control-item">
         <div class="control-label">
-          <span>ความละเอียดดีเทล (Detail)</span>
-          <span id="detailVal">65</span>
+          <span>ความคมชัดเส้นโครงหลัก (Sensitivity)</span>
+          <span id="sensVal">50</span>
         </div>
-        <input type="range" id="detail" min="20" max="95" value="65">
+        <input type="range" id="sensitivity" min="10" max="90" value="50">
       </div>
 
+      <!-- 2. ตัดความรกของผิว/เงา (หัวใจสำคัญของรูปรายละเอียดเยอะ) -->
+      <div class="control-item" id="cleanGroup">
+        <div class="control-label">
+          <span style="color:#0984e3;">ตัดพื้นผิวรก / เงารบกวน (Texture Suppress)</span>
+          <span id="suppressVal">4</span>
+        </div>
+        <input type="range" id="suppress" min="1" max="10" value="4">
+      </div>
+
+      <!-- 3. ความหนาเส้น -->
       <div class="control-item">
         <div class="control-label">
           <span>ความหนาเส้น (Thickness)</span>
-          <span id="thickVal">2.5</span>
+          <span id="thickVal">2.0</span>
         </div>
-        <input type="range" id="thick" min="1.0" max="6.0" step="0.5" value="2.5">
-      </div>
-
-      <div class="control-item">
-        <div class="control-label">
-          <span>ลบจุดฝุ่นเล็กๆ (Filter Dots)</span>
-          <span id="dotsVal">3</span>
-        </div>
-        <input type="range" id="dots" min="0" max="8" value="3">
+        <input type="range" id="thick" min="1.0" max="5.0" step="0.5" value="2.0">
       </div>
     </div>
 
@@ -207,7 +211,7 @@
 
   <script>
     let rawImg = null;
-    let currentMode = 'draw';
+    let imageType = 'complex'; // ค่าเริ่มต้นเป็นแบบภาพรายละเอียดเยอะ
 
     const dropzone = document.getElementById('dropzone');
     const fileInput = document.getElementById('fileInput');
@@ -217,7 +221,6 @@
 
     dropzone.onclick = () => fileInput.click();
     fileInput.onchange = (e) => loadFile(e.target.files[0]);
-
     window.addEventListener('paste', (e) => {
       const item = [...e.clipboardData.items].find(x => x.type.includes('image'));
       if (item) loadFile(item.getAsFile());
@@ -237,67 +240,87 @@
           resultCanvas.width = Math.round(rawImg.width * scale);
           resultCanvas.height = Math.round(rawImg.height * scale);
 
-          processContour();
+          processImage();
         };
         rawImg.src = e.target.result;
       };
       reader.readAsDataURL(file);
     }
 
-    function setMode(mode) {
-      currentMode = mode;
-      document.getElementById('btnModeDraw').classList.toggle('active', mode === 'draw');
-      document.getElementById('btnModeColor').classList.toggle('active', mode === 'color');
-      processContour();
+    function setType(type) {
+      imageType = type;
+      document.getElementById('btnModeSimple').classList.toggle('active', type === 'simple');
+      document.getElementById('btnModeComplex').classList.toggle('active', type === 'complex');
+      
+      // ปรับค่าเริ่มต้นให้เหมาะสมกับแต่ละโหมด
+      if (type === 'complex') {
+        document.getElementById('suppress').value = 4;
+        document.getElementById('suppressVal').innerText = "4";
+        document.getElementById('sensitivity').value = 50;
+        document.getElementById('sensVal').innerText = "50";
+      } else {
+        document.getElementById('suppress').value = 1;
+        document.getElementById('suppressVal').innerText = "1";
+        document.getElementById('sensitivity').value = 65;
+        document.getElementById('sensVal').innerText = "65";
+      }
+      processImage();
     }
 
-    function processContour() {
+    // อัลกอริทึมสำหรับภาพรายละเอียดเยอะ (DoG + Adaptive Threshold)
+    function processImage() {
       if (!rawImg) return;
       const w = resultCanvas.width;
       const h = resultCanvas.height;
 
-      const detail = parseInt(document.getElementById('detail').value);
+      const sens = parseInt(document.getElementById('sensitivity').value);
+      const suppress = parseInt(document.getElementById('suppress').value);
       const thick = parseFloat(document.getElementById('thick').value);
-      const dots = parseInt(document.getElementById('dots').value);
 
-      const tempCan = document.createElement('canvas');
-      tempCan.width = w;
-      tempCan.height = h;
-      const tCtx = tempCan.getContext('2d');
+      // สร้าง Canvas ย่อย 2 ตัว สำหรับทำ Difference of Gaussians (ตัดเงาไล่ระดับออก)
+      const c1 = document.createElement('canvas');
+      const c2 = document.createElement('canvas');
+      c1.width = c2.width = w;
+      c1.height = c2.height = h;
+      const ctx1 = c1.getContext('2d');
+      const ctx2 = c2.getContext('2d');
 
-      tCtx.filter = dots > 0 ? `blur(${dots * 0.6}px)` : 'none';
-      tCtx.drawImage(rawImg, 0, 0, w, h);
+      // เลเยอร์ 1: กรอง Texture พื้นผิวออก (ยิ่งภาพรก ยิ่งต้องเบลอเกลี่ยพื้นผิว)
+      ctx1.filter = `blur(${suppress * 0.4}px) grayscale(100%)`;
+      ctx1.drawImage(rawImg, 0, 0, w, h);
 
-      const imgData = tCtx.getImageData(0, 0, w, h);
-      const d = imgData.data;
+      // เลเยอร์ 2: รัศมีกว้างขึ้น เพื่อใช้หักล้างแสงเงา
+      ctx2.filter = `blur(${suppress * 0.4 + 2.5}px) grayscale(100%)`;
+      ctx2.drawImage(rawImg, 0, 0, w, h);
 
-      const gray = new Float32Array(w * h);
-      for (let i = 0; i < d.length; i += 4) {
-        gray[i / 4] = 0.299 * d[i] + 0.587 * d[i+1] + 0.114 * d[i+2];
-      }
+      const d1 = ctx1.getImageData(0, 0, w, h).data;
+      const d2 = ctx2.getImageData(0, 0, w, h).data;
 
       const edgeMap = new Uint8Array(w * h);
-      const threshold = (100 - detail) * 1.5;
+      const threshold = (100 - sens) * 0.35;
 
-      for (let y = 1; y < h - 1; y++) {
-        for (let x = 1; x < w - 1; x++) {
-          let idx = y * w + x;
-          if (currentMode === 'draw') {
-            let diffX = gray[idx + 1] - gray[idx - 1];
-            let diffY = gray[idx + w] - gray[idx - w];
-            let mag = Math.sqrt(diffX * diffX + diffY * diffY);
-            if (mag > threshold && gray[idx] < 200) edgeMap[idx] = 1;
-          } else {
-            let i1 = ((y) * w + (x + 1)) * 4;
-            let i2 = ((y) * w + (x - 1)) * 4;
-            let cDiff = Math.abs(d[i1] - d[i2]) + Math.abs(d[i1+1] - d[i2+1]) + Math.abs(d[i1+2] - d[i2+2]);
-            if (cDiff > threshold * 2.5) edgeMap[idx] = 1;
+      for (let i = 0; i < d1.length; i += 4) {
+        let v1 = d1[i];
+        let v2 = d2[i];
+
+        if (imageType === 'complex') {
+          // โหมดภาพถ่าย: จับเฉพาะจุดที่มีความต่างเฉียบพลัน (ขอบวัตถุแท้จริง) ปล่อยผ่านแสงเงา
+          let diff = v2 - v1;
+          if (diff > threshold) {
+            edgeMap[i / 4] = 1;
+          }
+        } else {
+          // โหมดภาพทั่วไป: ตรวจจับขอบปกติ
+          let diff = Math.abs(v1 - v2);
+          if (diff > threshold * 1.5 && v1 < 210) {
+            edgeMap[i / 4] = 1;
           }
         }
       }
 
+      // วาดเส้นแบบ Monoline คมชัด
       resultCtx.clearRect(0, 0, w, h);
-      resultCtx.fillStyle = '#222222';
+      resultCtx.fillStyle = '#1e272e';
       const r = thick / 2;
 
       for (let y = 0; y < h; y++) {
@@ -311,22 +334,18 @@
       }
     }
 
-    ['detail', 'thick', 'dots'].forEach(id => {
+    // Sliders
+    ['sensitivity', 'suppress', 'thick'].forEach(id => {
       document.getElementById(id).addEventListener('input', (e) => {
-        document.getElementById(id + 'Val').innerText = e.target.value;
-        processContour();
+        const valSpan = document.getElementById(id === 'sensitivity' ? 'sensVal' : id === 'suppress' ? 'suppressVal' : 'thickVal');
+        valSpan.innerText = e.target.value;
+        processImage();
       });
     });
 
-    // ========================================================
-    // ระบบบันทึก: แยกการทำงานระหว่าง PC และ มือถือ อย่างแม่นยำ
-    // ========================================================
-    document.getElementById('saveBtn').onclick = async () => {
-      if (!rawImg) {
-        alert('กรุณาเลือกรูปภาพก่อนครับ');
-        return;
-      }
-
+    // ระบบบันทึก (แยก PC และ มือถือ)
+    document.getElementById('saveBtn').onclick = () => {
+      if (!rawImg) return;
       const exportCanvas = document.createElement('canvas');
       exportCanvas.width = resultCanvas.width;
       exportCanvas.height = resultCanvas.height;
@@ -335,39 +354,27 @@
       exCtx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
       exCtx.drawImage(resultCanvas, 0, 0);
 
-      // ตรวจสอบว่าเปิดบนมือถือจริงๆ หรือไม่ (Android / iPhone / iPad)
       const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-
-      // ฟังก์ชันดาวน์โหลดตรงลงโฟลเดอร์ Downloads (สำหรับ PC)
       const downloadDirectly = () => {
         const a = document.createElement('a');
         a.href = exportCanvas.toDataURL('image/png');
-        a.download = 'contour-lineart.png';
+        a.download = 'clean-lineart.png';
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
       };
 
-      // ถ้าเป็นมือถือ ให้ใช้ระบบบันทึกรูปเข้า Gallery
       if (isMobile && navigator.canShare) {
         exportCanvas.toBlob(async (blob) => {
-          const file = new File([blob], 'contour-lineart.png', { type: 'image/png' });
+          const file = new File([blob], 'clean-lineart.png', { type: 'image/png' });
           if (navigator.canShare({ files: [file] })) {
             try {
-              await navigator.share({
-                files: [file],
-                title: 'บันทึกรูปลายเส้น',
-              });
+              await navigator.share({ files: [file], title: 'บันทึกรูปลายเส้น' });
               return;
-            } catch (err) {
-              downloadDirectly();
-            }
-          } else {
-            downloadDirectly();
-          }
+            } catch (err) { downloadDirectly(); }
+          } else { downloadDirectly(); }
         }, 'image/png');
       } else {
-        // ถ้าเป็น PC / คอมพิวเตอร์ -> บันทึกลงโฟลเดอร์ Downloads โดยตรงทันที ไม่เปิดแชร์
         downloadDirectly();
       }
     };
